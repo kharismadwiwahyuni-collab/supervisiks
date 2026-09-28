@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi E-Supervisi Akademik Pro</title>
+
+    <!-- Professional Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        corporate: {
+                            navy: '#0f172a',
+                            blue: '#1e3a8a',
+                            light: '#f8fafc',
+                            border: '#cbd5e1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js, SweetAlert2, html2pdf -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+
+        /* Typography & Base */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Tab Transitions */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* UI/UX Enhancements */
+        .card-modern {
+            background: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Professional Tables */
+        .table-standard {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        .table-standard th {
+            background-color: #1e3a8a !important; /* Navy Blue */
+            color: white !important;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            padding: 12px 16px;
+            border: 1px solid #0f172a;
+        }
+        .table-standard td {
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+        .table-standard tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .flex-main { flex-direction: column; }
+            .sidebar-nav { 
+                width: 100% !important; 
+                position: relative !important; 
+                top: 0 !important;
+                margin-bottom: 1.5rem;
+            }
+            .nav-list {
+                display: flex;
+                overflow-x: auto;
+                gap: 8px;
+                padding-bottom: 10px;
+                scrollbar-width: none;
+            }
+            .nav-list::-webkit-scrollbar { display: none; }
+            .nav-btn {
+                white-space: nowrap;
+                padding: 8px 16px !important;
+                font-size: 13px !important;
+            }
+            .stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .container-padding { padding: 1rem !important; }
+        }
+
+        /* Optimasi Ekspor & Cetak */
+        @media print {
+            @page {
+                size: A4;
+                margin: 30mm 20mm 30mm 30mm !important;
+            }
+            body { background: white; }
+            #print-area { display: block !important; }
+            
+            .print-table { 
+                width: 100%; 
+                border-collapse: collapse !important; 
+                margin-bottom: 20px; 
+                table-layout: fixed; 
+            }
+            .print-table th, .print-table td { 
+                border: 1px solid #000 !important; 
+                padding: 8px; 
+                font-size: 10pt; 
+                word-wrap: break-word;
+            }
+            .print-table th { 
+                background-color: #1e3a8a !important; 
+                color: white !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+                font-weight: bold;
+                text-align: center;
+            }
+            .print-header { 
+                text-align: center; 
+                margin-bottom: 25px; 
+                border-bottom: 2px solid #000; 
+                padding-bottom: 15px; 
+            }
+            .page-break { page-break-before: always; }
+            .avoid-break { page-break-inside: avoid !important; }
+            
+            .signature-table { 
+                width: 100%; 
+                margin-top: 30px; 
+                border: none !important; 
+            }
+            .signature-table td { 
+                border: none !important; 
+                text-align: center; 
+                width: 33%; 
+                font-size: 10pt;
+                vertical-align: top;
+            }
+        }
+
+        #print-area { display: none; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased font-sans">
+
+    <!-- Top Navigation -->
+    <nav class="bg-corporate-navy text-white shadow-lg sticky top-0 z-50 container-padding">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white shadow-inner">
+                        <i class="fas fa-shield-halved text-xl"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-extrabold text-lg tracking-tight leading-none">E-SUPERVISI</span>
+                        <span class="text-[10px] text-blue-300 font-bold tracking-widest uppercase">Kinerja Profesional</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="btnResetData" class="text-xs px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold transition-all shadow-md flex items-center gap-2">
+                        <i class="fas fa-redo-alt"></i> <span class="hidden sm:inline">Reset Sesi</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <div class="flex flex-main max-w-7xl mx-auto mt-6 px-4 gap-6 relative">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 sidebar-nav shrink-0">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 sticky top-24">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-3">Main Menu</p>
+                <ul class="space-y-1.5 nav-list">
+                    <li><button onclick="switchTab('dashboard')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg bg-corporate-blue text-white shadow-md transition-all font-semibold text-sm" data-target="dashboard"><i class="fas fa-chart-line w-6"></i> Dashboard</button></li>
+                    <li><button onclick="switchTab('profil')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all font-medium text-sm" data-target="profil"><i class="fas fa-school w-6"></i> Institusi</button></li>
+                    <li><button onclick="switchTab('guru')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all font-medium text-sm" data-target="guru"><i class="fas fa-user-tie w-6"></i> Database Guru</button></li>
+                    <li><button onclick="switchTab('instrumen')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all font-medium text-sm" data-target="instrumen"><i class="fas fa-clipboard-list w-6"></i> Instrumen</button></li>
+                    <li><button onclick="switchTab('penilaian')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all font-medium text-sm" data-target="penilaian"><i class="fas fa-file-signature w-6"></i> Observasi</button></li>
+                    <li><button onclick="switchTab('rekap')" class="nav-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-all font-medium text-sm" data-target="rekap"><i class="fas fa-print w-6"></i> Laporan</button></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <main class="flex-1 min-w-0 pb-20">
+            
+            <!-- Dashboard Section -->
+            <section id="tab-dashboard" class="tab-content active">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Executive Dashboard</h2>
+                    <p class="text-slate-500 mt-1 font-medium italic">Sistem Informasi Supervisi & Penjaminan Mutu Akademik</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stat-grid">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-blue-600">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><i class="fas fa-users text-xl"></i></div>
+                        <div><p class="text-xs font-bold text-slate-400 uppercase">Total Guru</p><p class="text-2xl font-black text-slate-800" id="stat-total-guru">0</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-rose-500">
+                        <div class="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500"><i class="fas fa-female text-xl"></i></div>
+                        <div><p class="text-xs font-bold text-slate-400 uppercase">Perempuan</p><p class="text-2xl font-black text-slate-800" id="stat-perempuan">0</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-sky-500">
+                        <div class="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center text-sky-500"><i class="fas fa-male text-xl"></i></div>
+                        <div><p class="text-xs font-bold text-slate-400 uppercase">Laki-laki</p><p class="text-2xl font-black text-slate-800" id="stat-laki">0</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 border-l-4 border-l-emerald-500">
+                        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fas fa-award text-xl"></i></div>
+                        <div><p class="text-xs font-bold text-slate-400 uppercase">Sertifikasi</p><p class="text-2xl font-black text-slate-800" id="stat-sertifikasi">0</p></div>
+                    </div>
+                </div>
+
+                <div class="bg-corporate-blue text-white rounded-2xl shadow-xl p-8 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-info-circle"></i> Sistem Enterprise Local Persistence</h3>
+                        <p class="text-blue-100 leading-relaxed text-sm max-w-2xl">
+                            Selamat datang di platform E-Supervisi PRO. Aplikasi ini bekerja menggunakan <span class="bg-white/20 px-1 rounded font-mono">Local Storage</span>. Seluruh data tersimpan aman secara privat di browser perangkat Anda. Data tidak akan hilang ketika browser ditutup.
+                        </p>
+                    </div>
+                    <i class="fas fa-shield-check absolute -right-10 -bottom-10 text-[180px] opacity-10"></i>
+                </div>
+            </section>
+
+            <!-- Profil Section -->
+            <section id="tab-profil" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Profil & Identitas Laporan</h2>
+                    <p class="text-slate-500 text-sm">Informasi ini akan muncul pada Kop Surat dan Lembar Pengesahan Laporan.</p>
+                </div>
+                
+                <form id="form-profil" class="bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Judul Laporan</label>
+                            <input type="text" id="prof-nama-app" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none transition text-sm font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Instansi / Sekolah</label>
+                            <input type="text" id="prof-sekolah" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Supervisor/Pengawas</label>
+                            <input type="text" id="prof-pengawas" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">NIP Supervisor</label>
+                            <input type="text" id="prof-nip-pengawas" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Kepala Sekolah</label>
+                            <input type="text" id="prof-kepsek" required class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">NIP Kepala Sekolah</label>
+                            <input type="text" id="prof-nip-kepsek" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium">
+                        </div>
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Alamat Lengkap Instansi</label>
+                            <textarea id="prof-alamat" rows="2" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-medium"></textarea>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kontak WA</label>
+                            <input type="text" id="prof-wa" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Dinas</label>
+                            <input type="email" id="prof-email" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-corporate-blue outline-none text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button type="submit" class="px-8 py-3 bg-corporate-blue hover:bg-blue-800 text-white rounded-lg font-bold transition shadow-lg flex items-center gap-2">
+                            <i class="fas fa-save"></i> Simpan Konfigurasi
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Guru Section -->
+            <section id="tab-guru" class="tab-content">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Database Pendidik</h2>
+                        <p class="text-slate-500 text-sm font-medium">Kelola data guru untuk pelaksanaan supervisi akademik.</p>
+                    </div>
+                    <button onclick="openModalGuru()" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-user-plus"></i> Tambah Guru
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+                    <table class="table-standard">
+                        <thead>
+                            <tr>
+                                <th class="w-12 text-center">No</th>
+                                <th>Biodata Pendidik</th>
+                                <th>Tugas & Mapel</th>
+                                <th class="text-center">Sertifikasi</th>
+                                <th class="w-24 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-guru-body">
+                            <!-- Populated via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Instrumen Section -->
+            <section id="tab-instrumen" class="tab-content">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Master Instrumen</h2>
+                        <p class="text-slate-500 text-sm font-medium">Pengaturan komponen dan indikator penilaian observasi.</p>
+                    </div>
+                    <button onclick="addInstrument()" class="w-full sm:w-auto px-5 py-2.5 border-2 border-corporate-blue text-corporate-blue hover:bg-blue-50 rounded-lg font-bold transition-all flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-plus-circle"></i> Instrumen Baru
+                    </button>
+                </div>
+                
+                <div id="instrumen-container" class="space-y-6">
+                    <!-- Dynamic Instrument Cards via JS -->
+                </div>
+            </section>
+
+            <!-- Penilaian Section -->
+            <section id="tab-penilaian" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Lembar Observasi</h2>
+                    <p class="text-slate-500 text-sm font-medium">Pelaksanaan penilaian kelas secara real-time.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Target Supervisi</label>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <select id="select-guru-penilaian" class="flex-1 p-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-corporate-blue outline-none text-sm font-semibold">
+                            <option value="">-- Pilih Guru / Pendidik --</option>
+                        </select>
+                        <button onclick="startPenilaian()" class="px-8 py-3 bg-corporate-navy text-white rounded-lg font-bold shadow-md hover:bg-slate-800 transition text-sm">
+                            Buka Instrumen
+                        </button>
+                    </div>
+                </div>
+
+                <div id="area-form-penilaian" class="hidden">
+                    <div class="bg-gradient-to-r from-corporate-blue to-blue-800 text-white p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-2xl border border-white/30"><i class="fas fa-user-edit"></i></div>
+                            <div>
+                                <p class="text-[10px] text-blue-200 uppercase font-black tracking-widest">Observasi Aktif</p>
+                                <h3 class="font-extrabold text-xl leading-tight" id="penilaian-nama-guru">-</h3>
+                            </div>
+                        </div>
+                        <div class="text-right text-xs font-medium bg-white/10 px-4 py-2 rounded-lg border border-white/20">
+                            Skala: 1 (Kurang) s/d 4 (Amat Baik)
+                        </div>
+                    </div>
+                    
+                    <form id="form-penilaian-actual" class="space-y-8">
+                        <!-- Dynamic assessment form generated here -->
+                    </form>
+                    
+                    <div class="mt-12 flex justify-center sm:justify-end">
+                        <button type="button" onclick="simpanPenilaian()" class="w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+                            <i class="fas fa-check-double"></i> KONFIRMASI & SIMPAN NILAI
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rekap & Analysis Section -->
+            <section id="tab-rekap" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Analisis & Ekspor Laporan</h2>
+                    <p class="text-slate-500 text-sm font-medium">Hasil rekapitulasi, analisis kritis, serta fitur ekspor dokumen resmi.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Pilih Objek Analisis</label>
+                    <select id="select-guru-rekap" class="w-full md:w-1/2 p-3 border border-slate-300 rounded-lg bg-slate-50 font-semibold text-sm outline-none" onchange="renderRekap()">
+                        <option value="">-- Pilih Nama Guru --</option>
+                    </select>
+                </div>
+
+                <div id="area-rekap-hasil" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="card-modern p-6 flex flex-col">
+                            <h3 class="font-black text-slate-800 mb-6 text-sm uppercase tracking-wide flex items-center gap-2">
+                                <span class="w-2 h-6 bg-blue-600 rounded-full"></span> Grafis Capaian Nilai
+                            </h3>
+                            <div class="flex-1 flex justify-center items-center w-full min-h-[300px]">
+                                <canvas id="scoreChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="card-modern p-6">
+                            <h3 class="font-black text-slate-800 mb-6 text-sm uppercase tracking-wide flex items-center gap-2">
+                                <span class="w-2 h-6 bg-blue-600 rounded-full"></span> Rincian Skor per Instrumen
+                            </h3>
+                            <div id="rekap-skor-list" class="space-y-3">
+                                <!-- Dynamic items via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-modern p-8">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-5">
+                            <h3 class="font-extrabold text-slate-800 text-lg uppercase">Analisis & Saran Pembinaan</h3>
+                            <button onclick="generateSaranAI()" class="px-5 py-2.5 bg-gradient-to-br from-indigo-600 to-purple-700 text-white text-xs font-black rounded-lg shadow-lg hover:shadow-indigo-200 transition-all flex items-center gap-2">
+                                <i class="fas fa-wand-magic-sparkles"></i> AUTO-GENERATE ANALISIS
+                            </button>
+                        </div>
+                        
+                        <div id="rekap-saran-instrumen" class="space-y-6 mb-8">
+                            <!-- Dynamic textareas -->
+                        </div>
+
+                        <div class="space-y-2 mt-8 pt-6 border-t border-slate-200">
+                            <label class="font-black text-slate-700 block text-xs uppercase tracking-widest">Kesimpulan Akhir (Ringkasan Eksekutif)</label>
+                            <textarea id="rekap-saran-global" rows="5" class="w-full p-4 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none transition leading-relaxed text-justify" placeholder="Tuliskan kesimpulan akhir di sini..."></textarea>
+                        </div>
+
+                        <div class="mt-6 flex justify-end">
+                            <button onclick="simpanSaran()" class="px-6 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-black transition-all flex items-center gap-2">
+                                <i class="fas fa-file-invoice"></i> Simpan Hasil Analisis
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 p-8 bg-slate-900 rounded-2xl items-center justify-between shadow-2xl">
+                        <div class="text-white">
+                            <p class="font-black text-lg">Export Dokumen Resmi</p>
+                            <p class="text-slate-400 text-xs mt-1">Margin standar A4 dengan lampiran grafik dan lembar pengesahan.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="exportWord()" class="px-6 py-3 bg-white text-blue-900 hover:bg-slate-100 rounded-xl font-black shadow-md transition-all flex items-center gap-2 text-sm">
+                                <i class="fas fa-file-word text-blue-600"></i> MS WORD
+                            </button>
+                            <button onclick="exportPDF()" class="px-6 py-3 bg-blue-600 text-white hover:bg-blue-500 rounded-xl font-black shadow-md transition-all flex items-center gap-2 text-sm">
+                                <i class="fas fa-file-pdf"></i> PDF RESMI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Form Guru -->
+    <div id="modal-guru" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-extrabold text-xl text-slate-800" id="modal-guru-title">Form Profil Pendidik</h3>
+                <button onclick="closeModalGuru()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-400 transition-all"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-8 overflow-y-auto flex-1">
+                <form id="form-guru" class="space-y-5">
+                    <input type="hidden" id="guru-id">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Nama Lengkap & Gelar</label>
+                            <input type="text" id="guru-nama" required class="w-full p-3 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-600 font-semibold text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">NIP / NIYPK</label>
+                            <input type="text" id="guru-nip" class="w-full p-3 border border-slate-300 rounded-lg text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Jenis Kelamin</label>
+                            <select id="guru-jk" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold">
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Tugas Utama</label>
+                            <select id="guru-jenis" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold">
+                                <option value="Wali Kelas">Wali Kelas</option>
+                                <option value="Guru Mata Pelajaran">Guru Mata Pelajaran</option>
+                                <option value="Guru Bimbingan Konseling">Guru Bimbingan Konseling</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Status Sertifikasi</label>
+                            <select id="guru-sertifikasi" required class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold">
+                                <option value="Belum">Belum Sertifikasi</option>
+                                <option value="Sudah">Sudah Sertifikasi</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-xs font-black text-slate-400 uppercase tracking-widest">Mata Pelajaran Diampu</label>
+                            <input type="text" id="guru-mapel" class="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold">
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-slate-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <label class="text-xs font-black text-corporate-blue uppercase tracking-widest">Atribut Tambahan</label>
+                            <button type="button" onclick="addCustomFieldGuru()" class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 font-black uppercase"><i class="fas fa-plus"></i> Tambah Field</button>
+                        </div>
+                        <div id="guru-custom-fields-container" class="space-y-3"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                <button type="button" onclick="closeModalGuru()" class="px-6 py-2.5 text-slate-500 font-bold hover:bg-slate-200 rounded-lg text-sm">Batal</button>
+                <button type="button" onclick="handleGuruSubmit()" class="px-8 py-2.5 bg-corporate-blue text-white rounded-lg font-black shadow-lg hover:bg-blue-800 transition-all text-sm">SIMPAN DATA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print / Export Hidden Area -->
+    <div id="print-area"></div>
+
+    <!-- Application Engine Logic -->
+    <script>
+        const STORAGE_KEY = 'E_SUPERVISI_PRO_DATA';
+
+        const DEFAULT_INSTRUMENTS = [
+            {
+                id: 1, title: "INSTRUMEN 1: SUPERVISI PERENCANAAN PEMBELAJARAN",
+                categories: [
+                    { id: 11, title: "Apersepsi & Motivasi", items: [
+                        {id: 1101, text: "Guru mengaitkan pembelajaran dengan pengalaman sehari-hari, memberi motivasi yang menggembirakan"}
+                    ]},
+                    { id: 12, title: "Penyampaian Tujuan", items: [
+                        {id: 1201, text: "Guru menyampaikan capaian & tujuan pembelajaran dengan jelas"}
+                    ]}
+                ]
+            },
+            {
+                id: 2, title: "INSTRUMEN 2: SUPERVISI PELAKSANAAN PEMBELAJARAN",
+                categories: [
+                    { id: 21, title: "Stimulus & Eksplorasi", items: [
+                        {id: 2101, text: "Guru memberi pemantik yang relevan, memfasilitasi eksplorasi murid."}
+                    ]},
+                    { id: 22, title: "Kolaborasi & Diskusi", items: [
+                        {id: 2201, text: "Murid terlibat aktif bekerja sama, diskusi bermakna."}
+                    ]},
+                    { id: 23, title: "Praktik & Aksi Nyata", items: [
+                        {id: 2301, text: "Murid mempraktikkan konsep dalam konteks nyata/proyek."}
+                    ]},
+                    { id: 24, title: "Refleksi", items: [
+                        {id: 2401, text: "Guru memandu murid melakukan evaluasi diri dan menemukan tindak lanjut."}
+                    ]}
+                ]
+            },
+            {
+                id: 3, title: "INSTRUMEN 3: SUPERVISI PENGELOLAAN KELAS",
+                categories: [
+                    { id: 31, title: "PENGELOLAAN KELAS", items: [
+                        {id: 3101, text: "Suasana Belajar (Suasana kelas aman, nyaman, saling menghargai)."},
+                        {id: 3102, text: "Pemanfaatan Digital (Teknologi digunakan untuk memperkuat pembelajaran)."}
+                    ]}
+                ]
+            },
+            {
+                id: 4, title: "INSTRUMEN 4: SUPERVISI IMPLEMENTASI PEMBELAJARAN MENDALAM",
+                categories: [
+                    { id: 41, title: "Keselarasan", items: [
+                        {id: 4101, text: "Awal pembelajaran."},
+                        {id: 4102, text: "Inti Pembelajaran (memahami, mengaplikasi, merefleksi)"},
+                        {id: 4103, text: "Penutupan pembelajaran"},
+                        {id: 4104, text: "Upaya mencapai tujuan pembelajaran menuju pencapaian dimensi profil lulusan selaras dengan perencanaan."},
+                        {id: 4105, text: "Disesuaikan dengan konteks kebutuhan belajar siswa."}
+                    ]},
+                    { id: 42, title: "Kerangka Pembelajaran", items: [
+                        {id: 4201, text: "Strategi pembelajaran diimplementasikan sesuai perencanaan / dimodifikasi sesuai kebutuhan."},
+                        {id: 4202, text: "Lingkungan belajar tergambar dalam langkah dan/atau asesmen pembelajaran."},
+                        {id: 4203, text: "Kemitraan pembelajaran tergambar dalam langkah dan/atau asesmen pembelajaran."},
+                        {id: 4204, text: "Pemanfaatan digital tergambar dalam langkah dan/atau asesmen pembelajaran."}
+                    ]},
+                    { id: 43, title: "Langkah Pembelajaran", items: [
+                        {id: 4301, text: "Guru dan murid saling MEMULIAKAN (bahasa verbal maupun nonverbal)."},
+                        {id: 4302, text: "MEMAHAMI: Menghubungkan pengetahuan baru dengan pengetahuan lama."},
+                        {id: 4303, text: "MEMAHAMI: Menghubungkan dengan konteks nyata kehidupan sehari-hari."},
+                        {id: 4304, text: "MEMAHAMI: Menstimulasi proses berpikir."},
+                        {id: 4305, text: "MEMAHAMI: Eksploratif & kolaboratif."},
+                        {id: 4306, text: "MEMAHAMI: Menanamkan nilai moral & karakter."},
+                        {id: 4307, text: "MENGAPLIKASI: Menghubungkan konsep baru dengan pengetahuan sebelumnya."},
+                        {id: 4308, text: "MENGAPLIKASI: Menghubungkan dengan konteks nyata kehidupan sehari-hari."},
+                        {id: 4309, text: "MENGAPLIKASI: Eksplorasi lanjut."},
+                        {id: 4310, text: "MENGAPLIKASI: Berpikir kritis & solusi inovatif."},
+                        {id: 4311, text: "MEREFLEKSI: Motivasi belajar."},
+                        {id: 4312, text: "MEREFLEKSI: Evaluasi diri."},
+                        {id: 4313, text: "MEREFLEKSI: Strategi berpikir."},
+                        {id: 4314, text: "MEREFLEKSI: Metakognisi."},
+                        {id: 4315, text: "MEREFLEKSI: Regulasi Emosi."},
+                        {id: 4316, text: "Prinsip pembelajaran mendalam (berkesadaran, bermakna, menggembirakan) tergambar pada setiap pengalaman belajar."},
+                        {id: 4317, text: "Praktik pembelajaran mengakomodir karakteristik peserta didik (usia, perkembangan, kemampuan, minat, gaya belajar, dll.)"} 
+                    ]}
+                ]
+            },
+            {
+                id: 5, title: "INSTRUMEN 5: SUPERVISI ASESMEN",
+                categories: [
+                    { id: 51, title: "Asesmen Awal", items: [
+                        {id: 5101, text: "Dilakukan untuk mengetahui kesiapan belajar (emosi, mental, pengetahuan awal, kebutuhan murid)"}
+                    ]},
+                    { id: 52, title: "Asesmen Proses", items: [
+                        {id: 5201, text: "Dilakukan untuk memantau perkembangan, memberi umpan balik (guru dan murid) dengan beragam teknik"}
+                    ]},
+                    { id: 53, title: "Asesmen Hasil", items: [
+                        {id: 5301, text: "Mengukur pencapaian kompetensi dengan tes, portofolio, proyek, presentasi, dsb."},
+                        {id: 5302, text: "Menyediakan umpan balik untuk perbaikan pembelajaran berikutnya."}
+                    ]}
+                ]
+            }
+        ];
+
+        let state = {
+            profile: {},
+            teachers: [],
+            instruments: [],
+            assessments: {}
+        };
+
+        // --- LOCAL STORAGE PERSISTENCE ---
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function loadState() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    state = { 
+                        profile: parsed.profile || {},
+                        teachers: parsed.teachers || [],
+                        instruments: parsed.instruments && parsed.instruments.length > 0 ? parsed.instruments : JSON.parse(JSON.stringify(DEFAULT_INSTRUMENTS)),
+                        assessments: parsed.assessments || {}
+                    };
+                } catch (e) {
+                    console.error("Error parsing saved data:", e);
+                    state = {
+                        profile: {},
+                        teachers: [],
+                        instruments: JSON.parse(JSON.stringify(DEFAULT_INSTRUMENTS)),
+                        assessments: {}
+                    };
+                }
+            } else {
+                state = {
+                    profile: {},
+                    teachers: [],
+                    instruments: JSON.parse(JSON.stringify(DEFAULT_INSTRUMENTS)),
+                    assessments: {}
+                };
+            }
+            
+            if (state.profile) {
+                document.getElementById('prof-nama-app').value = state.profile.namaApp || 'E-SUPERVISI AKADEMIK PRO';
+                document.getElementById('prof-sekolah').value = state.profile.sekolah || '';
+                document.getElementById('prof-pengawas').value = state.profile.pengawas || '';
+                document.getElementById('prof-nip-pengawas').value = state.profile.nipPengawas || '';
+                document.getElementById('prof-kepsek').value = state.profile.kepsek || '';
+                document.getElementById('prof-nip-kepsek').value = state.profile.nipKepsek || '';
+                document.getElementById('prof-wa').value = state.profile.wa || '';
+                document.getElementById('prof-email').value = state.profile.email || '';
+                document.getElementById('prof-alamat').value = state.profile.alamat || '';
+            }
+        }
+
+        let theChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            updateDashboard();
+            renderTeachersTable();
+            renderInstruments();
+            populateGuruDropdowns();
+            document.getElementById('btnResetData').addEventListener('click', confirmReset);
+            document.getElementById('form-profil').addEventListener('submit', handleProfileSubmit);
+        });
+
+        const Toast = Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000 });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-corporate-blue', 'text-white', 'shadow-md');
+                el.classList.add('text-slate-600', 'hover:bg-slate-100');
+            });
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            let activeBtn = document.querySelector(`.nav-btn[data-target="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                activeBtn.classList.add('bg-corporate-blue', 'text-white', 'shadow-md');
+            }
+
+            if(tabId === 'dashboard') updateDashboard();
+            if(tabId === 'penilaian' || tabId === 'rekap') populateGuruDropdowns();
+        }
+
+        function confirmReset() {
+            Swal.fire({
+                title: 'Hapus Seluruh Data?', 
+                text: "Semua data profil, guru, instrumen, dan penilaian akan dihapus permanen dari browser ini.",
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', 
+                confirmButtonText: 'Ya, Reset Total!'
+            }).then((result) => { 
+                if (result.isConfirmed) { 
+                    localStorage.removeItem(STORAGE_KEY);
+                    location.reload(); 
+                } 
+            });
+        }
+
+        function handleProfileSubmit(e) {
+            e.preventDefault();
+            state.profile = {
+                namaApp: document.getElementById('prof-nama-app').value,
+                sekolah: document.getElementById('prof-sekolah').value,
+                pengawas: document.getElementById('prof-pengawas').value,
+                nipPengawas: document.getElementById('prof-nip-pengawas').value,
+                kepsek: document.getElementById('prof-kepsek').value,
+                nipKepsek: document.getElementById('prof-nip-kepsek').value,
+                wa: document.getElementById('prof-wa').value,
+                email: document.getElementById('prof-email').value,
+                alamat: document.getElementById('prof-alamat').value
+            };
+            saveState();
+            Toast.fire({ icon: 'success', title: 'Konfigurasi Institusi Berhasil Disimpan.' });
+        }
+
+        function updateDashboard() {
+            document.getElementById('stat-total-guru').innerText = state.teachers.length;
+            document.getElementById('stat-perempuan').innerText = state.teachers.filter(g => g.jk === 'Perempuan').length;
+            document.getElementById('stat-laki').innerText = state.teachers.filter(g => g.jk === 'Laki-laki').length;
+            document.getElementById('stat-sertifikasi').innerText = state.teachers.filter(g => g.sertifikasi === 'Sudah').length;
+        }
+
+        let currentCustomFields = [];
+        function renderTeachersTable() {
+            const tbody = document.getElementById('table-guru-body');
+            tbody.innerHTML = '';
+            if(state.teachers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 italic">Belum ada data guru. Silakan klik "Tambah Guru".</td></tr>`;
+                return;
+            }
+            state.teachers.forEach((g, idx) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="text-center font-bold text-slate-400">${idx + 1}</td>
+                        <td>
+                            <p class="font-extrabold text-slate-800">${g.nama}</p>
+                            <p class="text-[11px] font-bold text-blue-600 uppercase">NIP: ${g.nip || '-'}</p>
+                        </td>
+                        <td>
+                            <p class="font-semibold text-slate-700">${g.jenis}</p>
+                            <p class="text-xs text-slate-500">${g.mapel || '-'}</p>
+                        </td>
+                        <td class="text-center">${g.sertifikasi === 'Sudah' ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] px-3 py-1 rounded-full font-black uppercase">Sudah</span>' : '<span class="bg-slate-100 text-slate-500 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter">Belum</span>'}</td>
+                        <td class="text-center">
+                            <div class="flex justify-center gap-1">
+                                <button onclick="editGuru('${g.id}')" class="w-8 h-8 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition"><i class="fas fa-edit text-xs"></i></button>
+                                <button onclick="deleteGuru('${g.id}')" class="w-8 h-8 flex items-center justify-center text-red-600 hover:bg-red-50 rounded-full transition"><i class="fas fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openModalGuru() {
+            document.getElementById('form-guru').reset();
+            document.getElementById('guru-id').value = '';
+            document.getElementById('modal-guru-title').innerText = 'Tambah Data Pendidik';
+            currentCustomFields = []; renderCustomFieldsGuru();
+            document.getElementById('modal-guru').classList.remove('hidden');
+        }
+
+        function closeModalGuru() { document.getElementById('modal-guru').classList.add('hidden'); }
+
+        function addCustomFieldGuru() {
+            currentCustomFields.push({ label: '', value: '', id: Date.now().toString() });
+            renderCustomFieldsGuru();
+        }
+        function removeCustomFieldGuru(id) {
+            currentCustomFields = currentCustomFields.filter(f => f.id !== id); renderCustomFieldsGuru();
+        }
+        function renderCustomFieldsGuru() {
+            const cont = document.getElementById('guru-custom-fields-container');
+            cont.innerHTML = currentCustomFields.map(f => `
+                <div class="flex gap-2 items-center animate-fadeIn">
+                    <input type="text" placeholder="Nama Label" class="w-1/3 p-2.5 border border-slate-300 rounded-lg text-xs font-bold uppercase" value="${f.label}" onchange="updateCustomFieldGuru('${f.id}', 'label', this.value)">
+                    <input type="text" placeholder="Nilai" class="flex-1 p-2.5 border border-slate-300 rounded-lg text-xs" value="${f.value}" onchange="updateCustomFieldGuru('${f.id}', 'value', this.value)">
+                    <button type="button" onclick="removeCustomFieldGuru('${f.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-minus-circle"></i></button>
+                </div>
+            `).join('');
+        }
+        function updateCustomFieldGuru(id, key, val) { 
+            const item = currentCustomFields.find(f => f.id === id);
+            if(item) item[key] = val;
+        }
+
+        function handleGuruSubmit() {
+            const nama = document.getElementById('guru-nama').value;
+            if(!nama) return Swal.fire('Error', 'Nama guru wajib diisi!', 'error');
+            const id = document.getElementById('guru-id').value || Date.now().toString();
+            const data = {
+                id: id, nama: nama,
+                nip: document.getElementById('guru-nip').value,
+                jk: document.getElementById('guru-jk').value,
+                jenis: document.getElementById('guru-jenis').value,
+                sertifikasi: document.getElementById('guru-sertifikasi').value,
+                mapel: document.getElementById('guru-mapel').value,
+                customFields: currentCustomFields
+            };
+            const idx = state.teachers.findIndex(g => g.id === id);
+            if(idx >= 0) state.teachers[idx] = data; else state.teachers.push(data);
+            saveState();
+            renderTeachersTable(); updateDashboard(); closeModalGuru();
+            Toast.fire({ icon: 'success', title: 'Database Guru diperbarui.' });
+        }
+
+        function editGuru(id) {
+            const g = state.teachers.find(t => t.id === id);
+            if(!g) return;
+            document.getElementById('guru-id').value = g.id;
+            document.getElementById('guru-nama').value = g.nama;
+            document.getElementById('guru-nip').value = g.nip;
+            document.getElementById('guru-jk').value = g.jk;
+            document.getElementById('guru-jenis').value = g.jenis;
+            document.getElementById('guru-sertifikasi').value = g.sertifikasi;
+            document.getElementById('guru-mapel').value = g.mapel || '';
+            currentCustomFields = g.customFields || [];
+            document.getElementById('modal-guru-title').innerText = 'Edit Profil Pendidik';
+            renderCustomFieldsGuru();
+            document.getElementById('modal-guru').classList.remove('hidden');
+        }
+
+        function deleteGuru(id) {
+            Swal.fire({
+                title: 'Hapus Guru?', text: "Data penilaian terkait guru ini juga akan terhapus.",
+                icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, Hapus!'
+            }).then(r => {
+                if(r.isConfirmed) {
+                    state.teachers = state.teachers.filter(t => t.id !== id);
+                    delete state.assessments[id];
+                    saveState();
+                    renderTeachersTable(); updateDashboard();
+                }
+            });
+        }
+
+        function populateGuruDropdowns() {
+            const opts = `<option value="">-- Pilih Guru / Pendidik --</option>` + state.teachers.map(g => `<option value="${g.id}">${g.nama} (${g.mapel || g.jenis})</option>`).join('');
+            document.getElementById('select-guru-penilaian').innerHTML = opts;
+            document.getElementById('select-guru-rekap').innerHTML = opts;
+        }
+
+        function renderInstruments() {
+            const container = document.getElementById('instrumen-container');
+            container.innerHTML = state.instruments.map((inst, iIdx) => `
+                <div class="card-modern overflow-hidden">
+                    <div class="flex justify-between items-center bg-slate-100 p-4 border-b border-slate-200">
+                        <div class="flex-1 flex items-center gap-3">
+                            <span class="bg-corporate-navy text-white text-[10px] font-black px-2 py-1 rounded">ID: ${iIdx + 1}</span>
+                            <input type="text" value="${inst.title}" onchange="updateInstTitle(${inst.id}, this.value)" class="font-black text-slate-800 bg-transparent border-b border-transparent focus:border-corporate-blue focus:outline-none w-2/3 text-sm">
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="moveInst(${iIdx}, -1)" class="p-1 text-slate-400 hover:text-blue-600"><i class="fas fa-chevron-up"></i></button>
+                            <button onclick="moveInst(${iIdx}, 1)" class="p-1 text-slate-400 hover:text-blue-600"><i class="fas fa-chevron-down"></i></button>
+                            <button onclick="deleteInst(${inst.id})" class="p-1 text-red-500 hover:bg-red-50 ml-2 rounded"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        ${inst.categories.map((cat, cIdx) => `
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <span class="font-black text-blue-600">${String.fromCharCode(65 + cIdx)}.</span>
+                                    <input type="text" value="${cat.title}" onchange="updateCatTitle(${inst.id},${cat.id}, this.value)" class="font-bold text-sm text-slate-700 bg-transparent border-b-2 border-slate-200 focus:border-blue-600 outline-none w-1/2">
+                                    <button onclick="deleteCat(${inst.id},${cat.id})" class="text-red-400 hover:text-red-600 text-[10px] ml-auto font-black uppercase">Hapus Aspek</button>
+                                </div>
+                                <ul class="space-y-2 text-sm">
+                                    ${cat.items.map((item, itIdx) => `
+                                        <li class="flex items-start gap-3 group bg-white p-2 rounded-lg border border-slate-200 shadow-sm">
+                                            <span class="w-6 h-6 flex items-center justify-center bg-slate-100 rounded text-[10px] font-bold text-slate-400 shrink-0 mt-0.5">${itIdx+1}</span>
+                                            <textarea rows="1" onchange="updateItemText(${inst.id}, ${cat.id}, ${item.id}, this.value)" class="flex-1 resize-none bg-transparent outline-none font-medium text-slate-600">${item.text}</textarea>
+                                            <button onclick="deleteItem(${inst.id}, ${cat.id}, ${item.id})" class="text-red-300 hover:text-red-600 transition p-1"><i class="fas fa-times text-xs"></i></button>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                                <button onclick="addItem(${inst.id},${cat.id})" class="mt-4 text-[10px] text-blue-600 bg-blue-100 px-3 py-1.5 rounded-full hover:bg-blue-200 font-black uppercase"><i class="fas fa-plus"></i> Tambah Indikator</button>
+                            </div>
+                        `).join('')}
+                        <button onclick="addCat(${inst.id})" class="w-full py-3 border-2 border-dashed border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"><i class="fas fa-layer-group"></i> Tambah Kategori Baru</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addInstrument() { state.instruments.push({ id: Date.now(), title: "INSTRUMEN OBSERVASI BARU", categories: [] }); saveState(); renderInstruments(); }
+        function updateInstTitle(id, val) { state.instruments.find(i => i.id === id).title = val; saveState(); }
+        function deleteInst(id) { Swal.fire({title:'Hapus?', icon:'warning', showCancelButton:true}).then(r=>{if(r.isConfirmed){state.instruments=state.instruments.filter(i=>i.id!==id);saveState();renderInstruments();}}); }
+        function moveInst(idx, dir) { if(idx+dir < 0 || idx+dir >= state.instruments.length) return; const tmp = state.instruments[idx]; state.instruments[idx] = state.instruments[idx+dir]; state.instruments[idx+dir] = tmp; saveState(); renderInstruments(); }
+        function addCat(iId) { state.instruments.find(i=>i.id===iId).categories.push({id: Date.now(), title:"Kategori Baru", items:[]}); saveState(); renderInstruments(); }
+        function updateCatTitle(iId, cId, val) { state.instruments.find(i=>i.id===iId).categories.find(c=>c.id===cId).title = val; saveState(); }
+        function deleteCat(iId, cId) { const i = state.instruments.find(i=>i.id===iId); i.categories = i.categories.filter(c=>c.id!==cId); saveState(); renderInstruments(); }
+        function addItem(iId, cId) { Swal.fire({title:'Indikator Pengamatan:', input:'textarea'}).then(r=>{if(r.value){state.instruments.find(i=>i.id===iId).categories.find(c=>c.id===cId).items.push({id: Date.now(), text:r.value}); saveState(); renderInstruments();}}); }
+        function updateItemText(iId, cId, itId, val) { state.instruments.find(i=>i.id===iId).categories.find(c=>c.id===cId).items.find(it=>it.id===itId).text = val; saveState(); }
+        function deleteItem(iId, cId, itId) { const c = state.instruments.find(i=>i.id===iId).categories.find(c=>c.id===cId); c.items = c.items.filter(it=>it.id!==itId); saveState(); renderInstruments(); }
+
+        let activeGuruId = null;
+        function startPenilaian() {
+            const gId = document.getElementById('select-guru-penilaian').value;
+            if(!gId) return Swal.fire('Error', 'Pilih guru terlebih dahulu!', 'error');
+            activeGuruId = gId;
+            const guru = state.teachers.find(t => t.id === gId);
+            document.getElementById('penilaian-nama-guru').innerText = `${guru.nama}`;
+            document.getElementById('area-form-penilaian').classList.remove('hidden');
+            const sd = state.assessments[gId] || { scores: {} };
+            const container = document.getElementById('form-penilaian-actual');
+            container.innerHTML = state.instruments.map((inst, iIdx) => `
+                <div class="card-modern overflow-hidden">
+                    <div class="bg-slate-800 p-4 border-b border-slate-700 font-black text-white text-xs uppercase tracking-widest flex items-center gap-3">
+                        <span class="bg-blue-600 px-2 py-1 rounded">INS-${iIdx+1}</span> ${inst.title}
+                    </div>
+                    <div class="p-0 overflow-x-auto">
+                        ${inst.categories.map((cat, cIdx) => `
+                            <div class="p-6 ${cIdx !== 0 ? 'border-t border-slate-100' : ''}">
+                                <h4 class="font-black text-xs text-blue-600 mb-4 uppercase tracking-wider">${String.fromCharCode(65+cIdx)}.${cat.title}</h4>
+                                <table class="table-standard">
+                                    <thead><tr><th class="text-left">Indikator Pengamatan</th><th class="w-14 text-center">4</th><th class="w-14 text-center">3</th><th class="w-14 text-center">2</th><th class="w-14 text-center">1</th></tr></thead>
+                                    <tbody>
+                                        ${cat.items.map((item, itIdx) => {
+                                            const key = `i${inst.id}_c${cat.id}_t${item.id}`;
+                                            const v = sd.scores[key] || '';
+                                            return `
+                                            <tr class="hover:bg-blue-50 transition-colors">
+                                                <td class="font-medium text-slate-700">${itIdx+1}. ${item.text}</td>
+                                                <td class="text-center"><input type="radio" name="${key}" value="4" ${v=='4'?'checked':''} class="w-5 h-5 accent-emerald-600 cursor-pointer"></td>
+                                                <td class="text-center"><input type="radio" name="${key}" value="3" ${v=='3'?'checked':''} class="w-5 h-5 accent-blue-600 cursor-pointer"></td>
+                                                <td class="text-center"><input type="radio" name="${key}" value="2" ${v=='2'?'checked':''} class="w-5 h-5 accent-yellow-500 cursor-pointer"></td>
+                                                <td class="text-center"><input type="radio" name="${key}" value="1" ${v=='1'?'checked':''} class="w-5 h-5 accent-red-500 cursor-pointer"></td>
+                                            </tr>`;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function simpanPenilaian() {
+            if(!activeGuruId) return;
+            const form = new FormData(document.getElementById('form-penilaian-actual'));
+            let scores = {}; for(let [k,v] of form.entries()) scores[k] = v;
+            let oldData = state.assessments[activeGuruId] || {};
+            state.assessments[activeGuruId] = { ...oldData, scores: scores };
+            saveState();
+            Toast.fire({icon: 'success', title: 'Data observasi berhasil disimpan!'});
+        }
+
+        function renderRekap() {
+            const gId = document.getElementById('select-guru-rekap').value;
+            const area = document.getElementById('area-rekap-hasil');
+            if(!gId) { area.classList.add('hidden'); return; }
+            const data = state.assessments[gId];
+            if(!data || !data.scores || Object.keys(data.scores).length === 0) {
+                area.classList.add('hidden');
+                Swal.fire('Informasi', 'Belum ada data observasi untuk guru ini.', 'info'); return;
+            }
+            area.classList.remove('hidden');
+            let labels = []; let chartData = []; let bgColors = [];
+            let listHTML = ''; let saranInstHTML = '';
+            state.instruments.forEach((inst, idx) => {
+                let score = 0; let max = 0;
+                inst.categories.forEach(c => c.items.forEach(it => {
+                    max += 4; const val = data.scores[`i${inst.id}_c${c.id}_t${it.id}`];
+                    if(val) score += parseInt(val);
+                }));
+                const n = max > 0 ? parseFloat(((score/max)*100).toFixed(1)) : 0;
+                let colorClass = 'bg-red-500'; let chartColor = 'rgba(239, 68, 68, 0.8)'; let status = 'Kurang';
+                if(n >= 86) { colorClass = 'bg-emerald-600'; chartColor = 'rgba(16, 185, 129, 0.8)'; status = 'Sangat Baik'; }
+                else if(n >= 76) { colorClass = 'bg-blue-600'; chartColor = 'rgba(59, 130, 246, 0.8)'; status = 'Baik'; }
+                else if(n >= 56) { colorClass = 'bg-yellow-500'; chartColor = 'rgba(234, 179, 8, 0.8)'; status = 'Cukup'; }
+                labels.push(`INS-${idx+1}`); chartData.push(n); bgColors.push(chartColor);
+                listHTML += `
+                    <div class="flex justify-between items-center p-4 bg-slate-50 border border-slate-200 rounded-xl hover:shadow-md transition">
+                        <div class="flex-1">
+                            <p class="font-black text-xs text-slate-400 uppercase">Instrumen ${idx+1}</p>
+                            <p class="font-bold text-sm text-slate-800 line-clamp-1">${inst.title}</p>
+                        </div>
+                        <div class="text-right pl-4">
+                            <p class="font-black text-xl text-slate-800">${n}</p>
+                            <span class="${colorClass} text-white text-[8px] font-black px-2 py-0.5 rounded uppercase">${status}</span>
+                        </div>
+                    </div>`;
+                saranInstHTML += `
+                    <div class="space-y-2">
+                        <label class="font-black text-slate-500 text-[10px] uppercase tracking-widest flex items-center gap-2">
+                           <i class="fas fa-comment-dots text-blue-600"></i> Saran Instrumen ${idx+1}
+                        </label>
+                        <textarea id="saran_i_${inst.id}" rows="3" class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none transition leading-relaxed">${data[`saran_i_${inst.id}`] || ''}</textarea>
+                    </div>`;
+            });
+            document.getElementById('rekap-skor-list').innerHTML = listHTML;
+            document.getElementById('rekap-saran-instrumen').innerHTML = saranInstHTML;
+            document.getElementById('rekap-saran-global').value = data.saran_global || '';
+            if(theChart) theChart.destroy();
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            theChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ data: chartData, backgroundColor: bgColors, borderRadius: 8, barThickness: 40 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100, ticks: { font: { weight: 'bold' } } }, x: { ticks: { font: { weight: 'bold' } } } },
+                    plugins: { legend: { display: false } }, animation: { duration: 0 }
+                }
+            });
+        }
+
+        function generateSaranAI() {
+            const gId = document.getElementById('select-guru-rekap').value;
+            const data = state.assessments[gId];
+            if(!data) return;
+            let totalN = 0; let count = 0;
+            state.instruments.forEach(inst => {
+                let s = 0; let m = 0;
+                inst.categories.forEach(c => c.items.forEach(it => { m += 4; if(data.scores[`i${inst.id}_c${c.id}_t${it.id}`]) s += parseInt(data.scores[`i${inst.id}_c${c.id}_t${it.id}`]); }));
+                let n = m > 0 ? (s/m)*100 : 0;
+                let text = "";
+                if (n < 76) {
+                    text = `ANALISIS KRITIS: Berdasarkan capaian skor ${n.toFixed(1)}%, ditemukan kesenjangan pada implementasi indikator ${inst.title}. Terdapat hambatan dalam integrasi metode dan alokasi waktu.\nSOLUSI: Pendidik memerlukan intervensi klinis melalui workshop pedagogik intensif dan perbaikan administrasi kelas.`;
+                } else if (n < 86) {
+                    text = `ANALISIS KRITIS: Capaian ${n.toFixed(1)}% menunjukkan pemahaman operasional yang baik. Kedalaman materi dan interaksi bermakna perlu ditingkatkan guna memicu kemandirian belajar murid.\nSOLUSI: Disarankan coaching dengan guru senior terkait teknik scaffolding dan integrasi teknologi.`;
+                } else {
+                    text = `ANALISIS ANALITIS: Hasil ${n.toFixed(1)}% merefleksikan tingkat profesionalisme yang sangat tinggi (Excellence). Pendidik mampu mengorkestrasi komponen pembelajaran secara holistik.\nSOLUSI: Pendidik diarahkan mendokumentasikan proses sebagai Best Practice dan berperan sebagai peer-mentor.`;
+                }
+                document.getElementById(`saran_i_${inst.id}`).value = text;
+                totalN += n; count++;
+            });
+            const avg = totalN / (count || 1);
+            let globalText = "";
+            if (avg < 76) {
+                globalText = `RINGKASAN EKSEKUTIF: Performa akademik berada pada zona "Critical Attention". Pendidik memerlukan supervisi klinis berkala dengan fokus pada manajemen kontrol kelas dan pemahaman kurikulum makro.`;
+            } else if (avg < 86) {
+                globalText = `RINGKASAN EKSEKUTIF: Kinerja keseluruhan berada pada profil "Good & Competent". Pendidik memiliki stabilitas dalam penyampaian kurikulum namun memerlukan sentuhan inovatif pada asesmen formatif.`;
+            } else {
+                globalText = `RINGKASAN EKSEKUTIF: Pendidik menunjukkan profil "Expert Practitioner" dengan konsistensi nilai amat baik di seluruh instrumen. Kapasitas pedagogik dan administratif sangat kuat.`;
+            }
+            document.getElementById('rekap-saran-global').value = globalText;
+        }
+
+        function simpanSaran() {
+            const gId = document.getElementById('select-guru-rekap').value;
+            if(!gId) return;
+            let data = state.assessments[gId];
+            state.instruments.forEach(inst => { data[`saran_i_${inst.id}`] = document.getElementById(`saran_i_${inst.id}`).value; });
+            data.saran_global = document.getElementById('rekap-saran-global').value;
+            saveState();
+            Toast.fire({ icon: 'success', title: 'Analisis & Simpulan berhasil disimpan!' });
+        }
+
+        async function getChartAsBase64() {
+            return new Promise((resolve) => {
+                try {
+                    const chartCanvas = document.getElementById('scoreChart');
+                    if (!chartCanvas) { resolve(null); return; }
+                    setTimeout(() => {
+                        try {
+                            const base64Image = chartCanvas.toDataURL('image/png');
+                            resolve(base64Image);
+                        } catch (e) {
+                            resolve(null);
+                        }
+                    }, 100);
+                } catch (e) {
+                    resolve(null);
+                }
+            });
+        }
+
+        async function ensureChartReady() {
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const checkChart = setInterval(() => {
+                    if (theChart || attempts > 10) {
+                        clearInterval(checkChart);
+                        setTimeout(() => resolve(), 150);
+                        return;
+                    }
+                    attempts++;
+                }, 50);
+            });
+        }
+
+        function buildReportHTML(gId, chartBase64 = null) {
+            const guru = state.teachers.find(t => t.id === gId);
+            const data = state.assessments[gId];
+            const p = state.profile;
+            let summaryData = []; let totGlobalScore = 0; let totGlobalMax = 0;
+            state.instruments.forEach((inst) => {
+                let instScore = 0; let instMax = 0;
+                inst.categories.forEach((cat) => { cat.items.forEach((item) => {
+                    instMax += 4; const v = data.scores[`i${inst.id}_c${cat.id}_t${item.id}`];
+                    if(v) instScore += parseInt(v);
+                });});
+                const instN = instMax > 0 ? ((instScore / instMax) * 100).toFixed(2) : 0;
+                summaryData.push({ title: inst.title, score: instScore, max: instMax, n: instN });
+                totGlobalScore += instScore; totGlobalMax += instMax;
+            });
+            const finalN = totGlobalMax > 0 ? ((totGlobalScore / totGlobalMax) * 100).toFixed(2) : 0;
+            
+            let html = `
+                <div class="print-header">
+                    <h2 style="margin:0; font-size: 14pt; font-weight: 800; text-transform: uppercase;">LAPORAN HASIL SUPERVISI AKADEMIK</h2>
+                    <h3 style="margin:0; font-size: 12pt; font-weight: 700; text-transform: uppercase; color: #1e3a8a;">${p.namaApp || 'E-SUPERVISI AKADEMIK PRO'}</h3>
+                    <p style="margin:5px 0 0 0; font-size: 10pt;">${p.sekolah || '-'} | ${p.alamat || '-'}</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <table style="width: 100%; border: none; font-size: 10pt;">
+                        <tr><td style="width: 25%; font-weight: bold; border: none; padding: 2px;">Nama Pendidik</td><td style="width: 2%; border: none;">:</td><td style="border: none;">${guru.nama}</td></tr>
+                        <tr><td style="font-weight: bold; border: none; padding: 2px;">NIP / NIYPK</td><td style="border: none;">:</td><td style="border: none;">${guru.nip || '-'}</td></tr>
+                        <tr><td style="font-weight: bold; border: none; padding: 2px;">Tugas / Mapel</td><td style="border: none;">:</td><td style="border: none;">${guru.jenis} ${guru.mapel ? '- '+guru.mapel : ''}</td></tr>
+                        <tr><td style="font-weight: bold; border: none; padding: 2px;">Supervisor</td><td style="border: none;">:</td><td style="border: none;">${p.pengawas || '-'}</td></tr>
+                    </table>
+                </div>
+
+                <h3 style="text-align: center; font-size: 11pt; font-weight: 800; margin-top: 10px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px;">I. RINGKASAN PENILAIAN</h3>
+                <table class="print-table">
+                    <thead>
+                        <tr><th style="width: 8%;">NO</th><th style="width: 52%;">ASPEK KOMPONEN PENILAIAN</th><th style="width: 20%;">SKOR PEROLEHAN</th><th style="width: 20%;">NILAI (N)</th></tr>
+                    </thead>
+                    <tbody>`;
+            summaryData.forEach((s, idx) => {
+                html += `<tr class="avoid-break"><td style="text-align:center;">${idx+1}</td><td>${s.title}</td><td style="text-align:center;">${s.score} / ${s.max}</td><td style="text-align:center; font-weight:bold;">${s.n}</td></tr>`;
+            });
+            html += `
+                        <tr class="avoid-break" style="background-color: #f1f5f9;">
+                            <td colspan="2" style="text-align: right; font-weight: 800; padding: 8px;">NILAI RATA-RATA KESELURUHAN</td>
+                            <td colspan="2" style="text-align: center; font-weight: 900; font-size: 12pt; border: 2px solid #000 !important;">${finalN}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="avoid-break" style="margin-top: 20px;">
+                    <p style="font-weight: 800; font-size: 10pt; margin-bottom: 5px; text-transform: uppercase;">Simpulan & Ringkasan Eksekutif:</p>
+                    <div style="text-align: justify; padding: 12px; border: 1pt solid #000; font-size: 10pt; line-height: 1.6; min-height: 120px; background: #fff;">
+                        ${data.saran_global ? data.saran_global.replace(/\n/g, '<br>') : '-'}
+                    </div>
+                </div>
+                
+                <div class="page-break"></div>
+                <h3 style="text-align: center; font-size: 11pt; font-weight: 800; text-transform: uppercase;">II. RINCIAN LEMBAR OBSERVASI</h3>`;
+
+            state.instruments.forEach((inst, iIdx) => {
+                html += `<div class="avoid-break" style="margin-top: 20px;"><h4 style="margin: 0; background-color: #e2e8f0; padding: 6px; border: 1pt solid #000; font-size: 10pt; font-weight: 800;">${iIdx+1}. ${inst.title}</h4></div>
+                        <table class="print-table">
+                            <thead><tr><th style="width: 8%;">NO</th><th style="width: 52%;">INDIKATOR PENGAMATAN</th><th style="width: 10%;">4</th><th style="width: 10%;">3</th><th style="width: 10%;">2</th><th style="width: 10%;">1</th></tr></thead><tbody>`;
+                inst.categories.forEach((cat, cIdx) => {
+                    html += `<tr class="avoid-break"><td colspan="6" style="font-weight:800; background-color: #f8fafc; font-size: 9pt;">${String.fromCharCode(65+cIdx)}. ${cat.title}</td></tr>`;
+                    cat.items.forEach((item, itIdx) => {
+                        const v = data.scores[`i${inst.id}_c${cat.id}_t${item.id}`];
+                        html += `<tr class="avoid-break"><td style="text-align:center;">${itIdx+1}</td><td>${item.text}</td><td style="text-align:center;">${v=='4'?'V':''}</td><td style="text-align:center;">${v=='3'?'V':''}</td><td style="text-align:center;">${v=='2'?'V':''}</td><td style="text-align:center;">${v=='1'?'V':''}</td></tr>`;
+                    });
+                });
+                html += `</tbody></table><div class="avoid-break" style="margin-bottom: 15px; font-size: 9pt; padding: 10px; border: 0.5pt solid #ccc; line-height: 1.4;"><b>Analisis Kritis & Saran Pembinaan:</b><br>${data[`saran_i_${inst.id}`] ? data[`saran_i_${inst.id}`].replace(/\n/g, '<br>') : '-'}</div>`;
+            });
+
+            if (chartBase64) {
+                html += `<div class="page-break" style="page-break-inside: avoid;"><h3 style="text-align: center; font-size: 11pt; font-weight: 800; text-transform: uppercase;">III. LAMPIRAN VISUALISASI CAPAIAN</h3><div style="text-align: center; margin-top: 20px; padding: 10px; border: 1px solid #ddd; page-break-inside: avoid;"><img src="${chartBase64}" style="width: 100%; max-width: 600px; height: auto; max-height: 400px; display: block; margin: 0 auto; border: 1px solid #ccc; padding: 5px;"></div></div>`;
+            }
+
+            html += `
+                <div class="avoid-break" style="margin-top: 40px;">
+                    <table class="signature-table">
+                        <tr>
+                            <td>
+                                Mengetahui,<br>Kepala Sekolah
+                                <br><br><br><br><br>
+                                <b><u>${p.kepsek || '.......................'}</u></b><br>
+                                NIP. ${p.nipKepsek || '-'}
+                            </td>
+                            <td>
+                                <br>Pendidik Terkait
+                                <br><br><br><br><br>
+                                <b><u>${guru.nama}</u></b><br>
+                                NIP. ${guru.nip || '-'}
+                            </td>
+                            <td>
+                                Tanggal: ......................<br>Supervisor / Pengawas
+                                <br><br><br><br><br>
+                                <b><u>${p.pengawas || '.......................'}</u></b><br>
+                                NIP. ${p.nipPengawas || '-'}
+                            </td>
+                        </tr>
+                    </table>
+                </div>`;
+
+            return html;
+        }
+
+        async function exportPDF() {
+            const gId = document.getElementById('select-guru-rekap').value;
+            if(!gId) return Swal.fire('Error', 'Pilih guru!', 'error');
+            
+            try {
+                Swal.fire({
+                    title: 'Memproses...',
+                    html: 'Mengkonversi grafik dan menyiapkan dokumen PDF',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                await ensureChartReady();
+                const chartBase64 = await getChartAsBase64();
+                const reportHTML = buildReportHTML(gId, chartBase64);
+                
+                const area = document.getElementById('print-area');
+                area.innerHTML = reportHTML;
+                area.style.display = 'block';
+                
+                const guruNama = state.teachers.find(t=>t.id===gId).nama.replace(/\s+/g,'_');
+                const opt = { 
+                    margin: [30, 20, 30, 30],
+                    filename: `Laporan_Supervisi_${guruNama}.pdf`,
+                    image: { type: 'png', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                await html2pdf().set(opt).from(area).save();
+                
+                area.innerHTML = '';
+                area.style.display = 'none';
+                
+                Swal.close();
+                Toast.fire({ icon: 'success', title: 'PDF berhasil diunduh!' });
+            } catch (error) {
+                console.error('Export PDF Error:', error);
+                Swal.close();
+                Swal.fire('Error', 'Gagal membuat PDF: ' + error.message, 'error');
+            }
+        }
+
+        async function exportWord() {
+            const gId = document.getElementById('select-guru-rekap').value;
+            if(!gId) return Swal.fire('Error', 'Pilih guru!', 'error');
+            
+            try {
+                Swal.fire({
+                    title: 'Memproses...',
+                    html: 'Mengkonversi grafik dan menyiapkan dokumen Word',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                await ensureChartReady();
+                const chartBase64 = await getChartAsBase64();
+                const reportHTML = buildReportHTML(gId, chartBase64);
+                
+                const wordStyles = `
+                    @page WordSection1 {size: 595.3pt 841.9pt; margin: 85pt 56.7pt 85pt 85pt;}
+                    div.WordSection1 {page: WordSection1;}
+                    body {font-family: Arial, sans-serif; font-size: 10pt; text-align: justify;}
+                    table {border-collapse: collapse; width: 100%;}
+                    th, td {border: 1pt solid black; padding: 5pt; vertical-align: top;}
+                    th {background-color: #1e3a8a; color: white; font-weight: bold;}
+                    .print-header {text-align: center; border-bottom: 2pt solid black; margin-bottom: 20pt;}
+                    .signature-table td {border: none !important; width: 33.3%; text-align: center;}
+                    img { display: block; margin: 20px auto; max-width: 100%; width: 100%; height: auto; border: 1px solid #ccc; padding: 5px; }
+                `;
+                
+                const wordHTML = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head><meta charset='utf-8'><style>${wordStyles}</style></head>
+                    <body><div class="WordSection1">${reportHTML}</div></body>
+                    </html>
+                `;
+                
+                const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Laporan_Supervisi_${state.teachers.find(t=>t.id===gId).nama.replace(/\s+/g,'_')}.doc`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                Swal.close();
+                Toast.fire({ icon: 'success', title: 'Dokumen Word berhasil diunduh!' });
+            } catch (error) {
+                console.error('Export Word Error:', error);
+                Swal.close();
+                Swal.fire('Error', 'Gagal membuat dokumen Word: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
